@@ -244,5 +244,9 @@ def categories(linha):
     if quantity == '0':
         return None
     else:
+        categorias = []
         for i in range(0, int(quantity)):
-            return True
+            #pular uma linha do arquivo
+            categorias = linha.split('|')[1:]
+            tupla = tuple(categoria.split("[]") for categoria in categorias)                
+            return tupla
