@@ -1,8 +1,8 @@
-# =================================================================================================
-#
-#                          Representação de Classes das Tabelas
-#
-# =================================================================================================
+"""
+
+Representação das tabelas do esquema em classes
+
+"""
 
 class Produto:
     def __init__(self, Asin, titulo,cod_grupo, rank):
@@ -200,12 +200,11 @@ class Similar:
     def similar_asin(self, similar_asin):
         self.__similar_asin = similar_asin
         
+"""
 
-# =================================================================================================
-#
-#                               Funções para extração de dados
-#
-# =================================================================================================
+Funcoes que serão usadas no loop de leitura do arquivo
+
+"""
         
 def assin(linha):
     assin = linha.split(':')[1][1:]
