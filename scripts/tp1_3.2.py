@@ -5,7 +5,7 @@ host="localhost"
 database="tp1"
 usuario="postgres"
 senha="12345"
-
+"""
 conector = psycopg2.connect("host=" + host + " dbname=" + database + 
                             " user=" + usuario + " password=" + senha)
 
@@ -16,6 +16,8 @@ cursor = conector.cursor()
 Criação das tabelas
 
 '''
+
+
 cursor.execute('''CREATE TABLE grupo (
                   codigo INTEGER PRIMARY KEY,
                   nome VARCHAR(255));''')
@@ -61,7 +63,7 @@ cursor.execute('''CREATE TABLE similars (
 conector.commit()
 cursor.close()
 conector.close()
-
+"""
 
 '''
 
@@ -78,9 +80,58 @@ cat_produto = []
 reviews = []
 similars = []
 
+id = 0
+asin = 0
+title = ''
+group = ''
+salesrank = 0
+similar = []
+categories = 0
+reviews = 0
+total = 0
+downloaded = 0
+avg_rating = 0
+
+
 with open(path, 'r', encoding='utf-8') as arquivo:
-    linhas = arquivo.readlines().strip()
+    linha = arquivo.readline().strip()
+
+    soma = 0
+    while soma < 50:  
+        if linha.startswith('Id:'):
+            print(f'ID DO PRODUTO ->{Parser.id(linha)}')
+        
+        elif linha.startswith('ASIN:'):
+            print(f'ASIN DO PRODUTO ->{Parser.assin(linha)}')
+            
+        elif not linha.startswith('discontinued product'):
+            if linha.startswith('title:'):
+                print(f'TITULO DO PRODUTO ->{Parser.title(linha)}')
+            
+            elif linha.startswith('group:'):
+                print(f'GRUPO DO PRODUTO ->{Parser.group(linha)}')
+                
+            elif linha.startswith('salesrank:'):
+                print(f'RANK DO PRODUTO ->{Parser.salesrank(linha)}')
+                
+            elif linha.startswith('similar:'):
+                print(f'SIMILARES DO PRODUTO ->{Parser.similar(linha)}')
+                
+            elif linha.startswith('categories:'):
+                print(f'CATEGORIAS DO PRODUTO ->{Parser.categories(linha, arquivo)}')
+            
+            elif linha.startswith('reviews:'):
+                print(f'REVIEWS DO PRODUTO ->{Parser.reviews(linha, arquivo)}')
+        
+        
+        else:
+            print('descontinuado')
+            #tratamento pra produto descontinuado
+            
+        linha = arquivo.readline().strip()
+        soma += 1
     
-for linha in range(0, 5):
-    print (linhas[linha])
-    
+    print(soma)
+
+
+    arquivo.close()

@@ -5,12 +5,21 @@ Representação das tabelas do esquema em classes
 """
 
 class Produto:
-    def __init__(self, Asin, titulo,cod_grupo, rank):
+    def __init__(self, Id, Asin, titulo,cod_grupo, rank):
+        self.id = Id
         self.asin = Asin
         self.titulo = titulo
         self.cod_grupo = cod_grupo
         self.rank = rank
         
+    @property
+    def id(self):
+        return self.__id
+    
+    @id.setter
+    def id(self, Id):
+        self.__id = Id
+    
     @property
     def ASIN(self):
         return self.__ASIN
@@ -206,12 +215,17 @@ Classe do parser
 
 """
 class Parser:
+        
+    def id(linha):
+        id = linha.split(':')[1][3:]
+        return id
+    
     def assin(linha):
         assin = linha.split(':')[1][1:]
         return assin
 
     def title(linha):
-        title = linha.split('title :')[1][1:]
+        title = linha.split('title: ')[1]
         return title
 
     def group(linha):
@@ -227,20 +241,33 @@ class Parser:
         if quantity == '0':
             return None
         else:
-            similars = []
-            for i in range(0, int(quantity)):
-                similar = linha.split(':')[2][1:].split(' ')[i]
-                similars.append(similar)
-                return similars
+            similar = linha.split(':')[1][1:].split()[1:]
+            return similar
             
-    def categories(linha):
+    def categories(linha, arquivo):
         quantity = linha.split(':')[1][1:2]
         if quantity == '0':
             return None
         else:
             categorias = []
+        
             for i in range(0, int(quantity)):
-                #pular uma linha do arquivo
-                categorias = linha.split('|')[1:]
-                tupla = tuple(categoria.split("[]") for categoria in categorias)                
-                return tupla
+                linha = arquivo.readline().strip()
+                categorias.append(linha.split('|')[1:])              
+            return categorias
+
+    def reviews(linha, arquivo):
+        quantity = linha.split('reviews: ')[1].split(' ')[1]
+        reviews = []
+        for review in range(0, int(quantity)):
+            linha = arquivo.readline().strip()
+            dados = linha.split()
+            dados.remove('cutomer:')
+            dados.remove('rating:')
+            dados.remove('votes:')
+            dados.remove('helpful:')
+            reviews.append(dados)
+        return reviews
+            
+
+
