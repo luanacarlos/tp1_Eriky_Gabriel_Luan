@@ -5,7 +5,7 @@ host="localhost"
 database="tp1"
 usuario="postgres"
 senha="12345"
-"""
+
 conector = psycopg2.connect("host=" + host + " dbname=" + database + 
                             " user=" + usuario + " password=" + senha)
 
@@ -18,14 +18,10 @@ Criação das tabelas
 '''
 
 
-cursor.execute('''CREATE TABLE grupo (
-                  codigo INTEGER PRIMARY KEY,
-                  nome VARCHAR(255));''')
-
 cursor.execute('''CREATE TABLE categoria (
-                  id SERIAL PRIMARY KEY,
-                  id_pai INTEGER,
-                  nome VARCHAR(155));''')
+                  id INTEGER PRIMARY KEY,
+                  nome VARCHAR(155),
+                  id_pai INTEGER);''')
 
 cursor.execute('''CREATE TABLE review (
                   id SERIAL PRIMARY KEY,
@@ -35,38 +31,30 @@ cursor.execute('''CREATE TABLE review (
                   votos INTEGER); ''')
 
 cursor.execute('''CREATE TABLE produto (
-                  id SERIAL PRIMARY KEY,
-                  asin VARCHAR(20) UNIQUE,
-                  titulo VARCHAR(255),
-                  cod_grupo INTEGER,
-                  rank INTEGER,
-                  id_categoria INTEGER,
-                  FOREIGN KEY (cod_grupo) REFERENCES grupo(codigo));''')
+                  id INTEGER PRIMARY KEY,
+                  assin VARCHAR(20) UNIQUE,
+                  titulo TEXT,
+                  grupo VARCHAR(20),
+                  rank INTEGER);''')
 
 cursor.execute('''CREATE TABLE cat_produto (
-                  asin VARCHAR(10),
+                  assin VARCHAR(10),
                   codigo INTEGER,
-                  FOREIGN KEY (asin) REFERENCES produto(asin),
+                  FOREIGN KEY (assin) REFERENCES produto(assin),
                   FOREIGN KEY (codigo) REFERENCES categoria(id));''')
 
-cursor.execute('''CREATE TABLE reviews (
-                  asin VARCHAR(10),
-                  review_id INTEGER,
-                  FOREIGN KEY (review_id) REFERENCES review(id),
-                  FOREIGN KEY (asin) REFERENCES produto(asin));''')
-
 cursor.execute('''CREATE TABLE similars (
-                  asin VARCHAR(20),
-                  asin_sim VARCHAR(20),
-                  FOREIGN KEY (asin) REFERENCES produto(asin));''')
+                  assin VARCHAR(20),
+                  assin_sim VARCHAR(20),
+                  FOREIGN KEY (assin) REFERENCES produto(assin));''')
 
 conector.commit()
 cursor.close()
 conector.close()
-"""
+
+
 
 '''
-
 Leitura do arquivo
 
 '''
@@ -75,12 +63,19 @@ path = '/home/luan/BD/amazon-meta.txt'
 produtos = []
 similares = []
 similar = []
+categorias = []
+cat_produtos = []
+reviews = []
+
+
 
 with open(path, 'r', encoding='utf-8') as arquivo:
-    linha = arquivo.readline().strip()
-
+    linha = arquivo.readline()
+    
     soma = 0
-    while soma < 1000000:  
+    while linha:  
+        linha = linha.strip()
+        #print(linha)
         if linha.startswith('Id:'):
             id = Parser.id(linha)
             ###
@@ -111,27 +106,38 @@ with open(path, 'r', encoding='utf-8') as arquivo:
 
             
             elif linha.startswith('categories:'):
-                pass
+                cats = None
+                hierarquia = None
+                cats, hierarquia = Parser.categories(linha, arquivo)
+                cat_produtos.append(CategoriaProduto(assin, cats))
+                if hierarquia is not None:
+                    for categoria in hierarquia:
+                        categorias.append(categoria)
+                
+                
+            
             
             elif linha.startswith('reviews:'):
-               pass
-        
-        
+                rev_list = Parser.reviews(linha, arquivo)
+                if rev_list is not None:
+                    for review in rev_list:
+                        reviews.append(Review(assin ,review[0], review[1], review[2], review[3], review[4]))
+                    
+                
         else:
-            print('descontinuado')
+            #print('descontinuado')
             produtos.append(Produto(id, assin, None, None, None))
-            
-        
-            
-        linha = arquivo.readline().strip()
+            #linha = arquivo.readline().strip()
+                  
         soma += 1
-
-    for similar in similares:
-        print(similar.asin)
-        print(similar.similars_asin)
-        print('\n')
+        if soma%1000000 == 0:
+            print(soma)
+        linha = arquivo.readline()
+                 
     arquivo.close()
+    print('done!')
     
+
     
 """
 
@@ -139,12 +145,29 @@ Inserção dos dados no banco de dados
 
 """
 
-"""
+
 conector = psycopg2.connect("host=" + host + " dbname=" + database + 
                             " user=" + usuario + " password=" + senha)
 
 cursor = conector.cursor()
 
-cursor.execute('''
-               INSERT INTO grupo (codigo, nome) VALUES
-               ''')"""
+for produto in produtos:
+    print(produto.id)
+    cursor.execute("""INSERT INTO produto (id, assin, titulo, grupo, rank)
+                      VALUES (%s, %s, %s, %s, %s)""", 
+                      (produto.id ,produto.assin, produto.titulo, produto.grupo, produto.rank))
+'''
+for categoria in categorias:
+    cursor.execute("""INSERT INTO categoria (id, nome, id_pai)
+                      VALUES (%s %s, %s)""",
+                      (categoria.id, categoria.nome, categoria.id_pai))'''
+    
+for similar in similares:
+    for element in similar.similars_asin:
+        cursor.execute("""INSERT INTO similars (assin, assin_sim)
+                        VALUES (%s, %s)""",
+                        (similar.Assin, element))
+
+conector.commit()
+cursor.close()
+conector.close()

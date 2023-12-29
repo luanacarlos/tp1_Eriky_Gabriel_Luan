@@ -1,3 +1,4 @@
+import re
 """
 
 Representação das tabelas do esquema em classes
@@ -103,27 +104,44 @@ class Categoria:
         
 
 class CategoriaProduto:
-    def __init__(self, asin, categoria_id):
+    def __init__(self, asin, lista_cat):
         self.asin = asin
-        self.categoria_id = categoria_id
+        self.lista_cat = lista_cat
+    
+    @property
+    def asin(self):
+        return self.__asin
+    
+    @asin.setter
+    def asin(self, asin):
+        self.__asin = asin
+    
+    @property
+    def lista_cat(self):
+        return self.__lista_cat
+    
+    @lista_cat.setter
+    def lista_cat(self, lista_cat):
+        self.__lista_cat = lista_cat
+        
         
 
 class Review:
-    def __init__(self, review_id, data, user_id, nota, votos, votos_util):
-        self.review_id = review_id
+    def __init__(self, assin, data, user_id, nota, votos, votos_util):
+        self.assin = assin
         self.data = data
         self.user_id = user_id
         self.nota = nota
         self.votos = votos
         self.votos_util = votos_util
-        
-    @property
-    def review_id(self):
-        return self.__review_id
     
-    @review_id.setter
-    def review_id(self, review_id):
-        self.__review_id = review_id
+    @property
+    def assin(self):
+        return self.__assin
+    
+    @assin.setter
+    def assin(self, assin):
+        self.__assin = assin
         
     @property
     def data(self):
@@ -189,25 +207,27 @@ class Reviews:
     
 
 class Similar:
-    def __init__(self, asin, similars_asin):
-        self.asin = asin
+    def __init__(self, Assin, similars_asin):
+        self.Assin = Assin
         self.similars_asin = similars_asin
         
     @property
-    def asin(self):
-        return self.__asin
+    def Assin(self):
+        return self.__Assin
     
-    @asin.setter
-    def asin(self, asin):
-        self.__asin = asin
+    @Assin.setter
+    def Assin(self, Assin):
+        self.__Assin = Assin
     
     @property
-    def similar_asin(self):
-        return self.__similar_asin
+    def similars_asin(self):
+        return self.__similars_asin
     
-    @similar_asin.setter
-    def similar_asin(self, similar_asin):
-        self.__similar_asin = similar_asin
+    @similars_asin.setter
+    def similars_asin(self, similars_asin):
+        self.__similars_asin = similars_asin
+        
+
         
 """
 
@@ -247,27 +267,86 @@ class Parser:
     def categories(linha, arquivo):
         quantity = linha.split(':')[1][1:2]
         if quantity == '0':
-            return None
+            return None, None
         else:
-            categorias = []
-        
+            cats = []
+            hierarquia = []
             for i in range(0, int(quantity)):
-                linha = arquivo.readline().strip()
-                categorias.append(linha.split('|')[1:])              
-            return categorias
+                linha = arquivo.readline().strip() 
+                cats.append(linha.split('|')[1:][-1])
+                for categoria in Parser.gera_hierarquia(linha.split('|')[1:]):
+                        hierarquia.append(categoria)
+                        
+            codes = Parser.extract_codes(cats)
+            #print(codes)
+            return codes, hierarquia
 
     def reviews(linha, arquivo):
-        quantity = linha.split('reviews: ')[1].split(' ')[1]
+        quantity = linha.split('reviews: ')[1].split(' ')[4]
         reviews = []
-        for review in range(0, int(quantity)):
-            linha = arquivo.readline().strip()
-            dados = linha.split()
-            dados.remove('cutomer:')
-            dados.remove('rating:')
-            dados.remove('votes:')
-            dados.remove('helpful:')
-            reviews.append(dados)
-        return reviews
+        if quantity == '0':
+            return None
+        else:
+            for review in range(0, int(quantity)):
+                linha = arquivo.readline().strip()
+                dados = linha.split()
+                dados.remove('cutomer:')
+                dados.remove('rating:')
+                dados.remove('votes:')
+                dados.remove('helpful:')
+                reviews.append(dados)
+            return reviews
             
 
+    def gera_hierarquia(lista):
+        categorias = []
+        codigos = Parser.extract_codes(lista)
+        nomes = Parser.extract_names(lista)
+        ultima = len(lista) - 1
+        while ultima != -1:
+            categorias.append(Categoria(codigos[ultima], nomes[ultima], codigos[ultima-1]) if ultima != 0 else Categoria(codigos[ultima], nomes[ultima], None))
+            ultima -= 1
+        return categorias
+    
+    def extract_codes(strings):
+        """
+        Extrai códigos de strings no formato "texto[code]" ou "texto".
 
+        Args:
+            strings: Uma lista de strings.
+
+        Returns:
+            Uma lista contendo os códigos extraídos ou None se a string não tiver um código.
+        """
+
+        codes = []
+        for string in strings:
+            # Encontra os índices de início e fim da seção de código mais à direita
+            start_index = string.rfind("[")
+            end_index = string.rfind("]")
+
+            # Verifica se há uma seção de código
+            if start_index != -1 and end_index != -1:
+                try:
+                    # Tenta converter o código para inteiro
+                    code = int(string[start_index + 1:end_index])
+                    codes.append(code)
+                except ValueError:
+                    # Se a conversão falhar, assume que não há código e adiciona None
+                    codes.append(None)
+            else:
+                # Não há seção de código na string, então adiciona None
+                codes.append(None)
+
+        return codes
+    
+    def extract_names(strings):
+        names = []
+        for string in strings:
+            start_index = 0  # Índice de início do texto
+            end_index = string.find("[")  # Índice de fechamento do colchete
+            name = string[:end_index]  # Extrai o texto
+            names.append(name)  # Adiciona o nome à lista de nomes
+
+        return names
+    
