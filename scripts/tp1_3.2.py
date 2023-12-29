@@ -72,66 +72,79 @@ Leitura do arquivo
 '''
 path = '/home/luan/BD/amazon-meta.txt'
 
-grupo = []
-categoria = []
-review = []
-produto = []
-cat_produto = []
-reviews = []
-similars = []
-
-id = 0
-asin = 0
-title = ''
-group = ''
-salesrank = 0
+produtos = []
+similares = []
 similar = []
-categories = 0
-reviews = 0
-total = 0
-downloaded = 0
-avg_rating = 0
-
 
 with open(path, 'r', encoding='utf-8') as arquivo:
     linha = arquivo.readline().strip()
 
     soma = 0
-    while soma < 50:  
+    while soma < 1000000:  
         if linha.startswith('Id:'):
-            print(f'ID DO PRODUTO ->{Parser.id(linha)}')
+            id = Parser.id(linha)
+            ###
         
         elif linha.startswith('ASIN:'):
-            print(f'ASIN DO PRODUTO ->{Parser.assin(linha)}')
+            assin = Parser.assin(linha)
+            ###
             
         elif not linha.startswith('discontinued product'):
             if linha.startswith('title:'):
-                print(f'TITULO DO PRODUTO ->{Parser.title(linha)}')
+                title = Parser.title(linha)
+                ###
             
             elif linha.startswith('group:'):
-                print(f'GRUPO DO PRODUTO ->{Parser.group(linha)}')
-                
+               grupo = Parser.group(linha)
+               ###
+                                   
             elif linha.startswith('salesrank:'):
-                print(f'RANK DO PRODUTO ->{Parser.salesrank(linha)}')
+                rank = Parser.salesrank(linha)
+                produtos.append(Produto(id, assin, title, grupo, rank))
+                ###
+                
                 
             elif linha.startswith('similar:'):
-                print(f'SIMILARES DO PRODUTO ->{Parser.similar(linha)}')
-                
+                if Parser.similar(linha) is not None:
+                    similares.append(Similar(assin, Parser.similar(linha)))
+                    ###
+
+            
             elif linha.startswith('categories:'):
-                print(f'CATEGORIAS DO PRODUTO ->{Parser.categories(linha, arquivo)}')
+                pass
             
             elif linha.startswith('reviews:'):
-                print(f'REVIEWS DO PRODUTO ->{Parser.reviews(linha, arquivo)}')
+               pass
         
         
         else:
             print('descontinuado')
-            #tratamento pra produto descontinuado
+            produtos.append(Produto(id, assin, None, None, None))
+            
+        
             
         linha = arquivo.readline().strip()
         soma += 1
-    
-    print(soma)
 
-
+    for similar in similares:
+        print(similar.asin)
+        print(similar.similars_asin)
+        print('\n')
     arquivo.close()
+    
+    
+"""
+
+Inserção dos dados no banco de dados
+
+"""
+
+"""
+conector = psycopg2.connect("host=" + host + " dbname=" + database + 
+                            " user=" + usuario + " password=" + senha)
+
+cursor = conector.cursor()
+
+cursor.execute('''
+               INSERT INTO grupo (codigo, nome) VALUES
+               ''')"""

@@ -5,12 +5,12 @@ Representação das tabelas do esquema em classes
 """
 
 class Produto:
-    def __init__(self, Id, Asin, titulo,cod_grupo, rank):
+    def __init__(self, Id, Assin, Titulo, Grupo, Rank):
         self.id = Id
-        self.asin = Asin
-        self.titulo = titulo
-        self.cod_grupo = cod_grupo
-        self.rank = rank
+        self.assin = Assin
+        self.titulo = Titulo
+        self.grupo = Grupo
+        self.rank = Rank
         
     @property
     def id(self):
@@ -21,12 +21,12 @@ class Produto:
         self.__id = Id
     
     @property
-    def ASIN(self):
-        return self.__ASIN
+    def ASSIN(self):
+        return self.__ASSIN
     
-    @ASIN.setter
-    def ASIN(self, ASIN):
-        self.__ASIN = ASIN
+    @ASSIN.setter
+    def ASSIN(self, ASSIN):
+        self.__ASSIN = ASSIN
         
     @property
     def titulo(self):
@@ -37,12 +37,12 @@ class Produto:
         self.__titulo = titulo
     
     @property
-    def cod_grupo(self):
-        return self.__cod_grupo
+    def grupo(self):
+        return self.__grupo
     
-    @cod_grupo.setter
-    def cod_grupo(self, cod_grupo):
-        self.__cod_grupo = cod_grupo
+    @grupo.setter
+    def grupo(self, grupo):
+        self.__grupo = grupo
     
     @property
     def rank(self):
@@ -189,9 +189,9 @@ class Reviews:
     
 
 class Similar:
-    def __init__(self, asin, similar_asin):
+    def __init__(self, asin, similars_asin):
         self.asin = asin
-        self.similar_asin = similar_asin
+        self.similars_asin = similars_asin
         
     @property
     def asin(self):
