@@ -73,57 +73,57 @@ class Grupo:
     
 
 class Categoria:
-    def __init__(self, categoria_id, categoria_nome, categoria_pai_id):
-        self.categoria_id = categoria_id
-        self.categoria_nome = categoria_nome
-        self.categoria_pai_id = categoria_pai_id
+    def __init__(self, id, nome, id_pai):
+        self.id = id
+        self.nome = nome
+        self.id_pai = id_pai
     
     @property
-    def categoria_id(self):
-        return self.__categoria_id
+    def id(self):
+        return self.__id
     
-    @categoria_id.setter
-    def categoria_id(self, categoria_id):
-        self.__categoria_id = categoria_id
+    @id.setter
+    def id(self, id):
+        self.__id = id
     
     @property
-    def categoria_nome(self):
-        return self.__categoria_nome
+    def nome(self):
+        return self.__nome
     
-    @categoria_nome.setter
-    def categoria_nome(self, categoria_nome):
-        self.__categoria_nome = categoria_nome
+    @nome.setter
+    def nome(self, nome):
+        self.__nome = nome
         
     @property
-    def categoria_pai_id(self):
-        return self.__categoria_pai_id
+    def id_pai(self):
+        return self.__id_pai
     
-    @categoria_pai_id.setter
-    def categoria_pai_id(self, categoria_pai_id):
-        self.__categoria_pai_id = categoria_pai_id
-        
-
+    @id_pai.setter
+    def id_pai(self, id_pai):
+        self.__id_pai = id_pai
+    
+    
 class CategoriaProduto:
-    def __init__(self, asin, lista_cat):
-        self.asin = asin
-        self.lista_cat = lista_cat
-    
+    def __init__(self, assin, lista_cat):
+        self.assin = assin
+        self.lista_cat = lista_cat  
+
     @property
-    def asin(self):
-        return self.__asin
+    def assin(self):
+        return self.__assin
     
-    @asin.setter
-    def asin(self, asin):
-        self.__asin = asin
+    @assin.setter
+    def assin(self, assin):
+        self.__assin = assin
     
     @property
     def lista_cat(self):
         return self.__lista_cat
-    
+
     @lista_cat.setter
     def lista_cat(self, lista_cat):
         self.__lista_cat = lista_cat
-        
+    
         
 
 class Review:
