@@ -274,6 +274,7 @@ class Parser:
             for i in range(0, int(quantity)):
                 linha = arquivo.readline().strip() 
                 cats.append(linha.split('|')[1:][-1])
+                #print(Parser.gera_hierarquia(linha.split('|')[1:]))
                 for categoria in Parser.gera_hierarquia(linha.split('|')[1:]):
                         hierarquia.append(categoria)
                         
@@ -304,7 +305,7 @@ class Parser:
         nomes = Parser.extract_names(lista)
         ultima = len(lista) - 1
         while ultima != -1:
-            categorias.append(Categoria(codigos[ultima], nomes[ultima], codigos[ultima-1]) if ultima != 0 else Categoria(codigos[ultima], nomes[ultima], None))
+            categorias.append((codigos[ultima], nomes[ultima], codigos[ultima-1]) if ultima != 0 else (codigos[ultima], nomes[ultima], None))
             ultima -= 1
         return categorias
     
