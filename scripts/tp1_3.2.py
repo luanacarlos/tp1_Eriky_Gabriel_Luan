@@ -25,7 +25,7 @@ cursor.execute('''CREATE TABLE categoria (
 
 cursor.execute('''CREATE TABLE review (
                   id SERIAL PRIMARY KEY,
-                  assin VARCHAR(20),
+                  assin VARCHAR(10),
                   data DATE,
                   user_id VARCHAR(20),
                   nota INTEGER,
@@ -34,10 +34,15 @@ cursor.execute('''CREATE TABLE review (
 
 cursor.execute('''CREATE TABLE produto (
                   id INTEGER PRIMARY KEY,
-                  assin VARCHAR(20) UNIQUE,
+                  assin VARCHAR(10) UNIQUE,
                   titulo TEXT,
                   grupo VARCHAR(20),
                   rank INTEGER);''') 
+
+cursor.execute('''CREATE TABLE similars (
+                  assin VARCHAR(10),
+                  assin_sim VARCHAR(10),
+                  FOREIGN KEY (assin) REFERENCES produto(assin));''') 
 
 cursor.execute('''CREATE TABLE cat_produto (
                   assin VARCHAR(10),
@@ -45,10 +50,7 @@ cursor.execute('''CREATE TABLE cat_produto (
                   FOREIGN KEY (assin) REFERENCES produto(assin),
                   FOREIGN KEY (codigo) REFERENCES categoria(id));''')
 
-cursor.execute('''CREATE TABLE similars (
-                  assin VARCHAR(20),
-                  assin_sim VARCHAR(20),
-                  FOREIGN KEY (assin) REFERENCES produto(assin));''') 
+
 
 conector.commit()
 cursor.close()
@@ -98,7 +100,7 @@ with open(path, 'r', encoding='utf-8') as arquivo:
                 if similar is not None:
                     for item in similar:
                         similares.append((assin, item))
-
+    
             elif linha.startswith('categories:'):
                 cats = None
                 hierarquia = None
@@ -127,7 +129,7 @@ with open(path, 'r', encoding='utf-8') as arquivo:
         linha = arquivo.readline()
                  
     arquivo.close()
-    
+
 """
 
 Inserção dos dados no banco de dados
@@ -138,53 +140,43 @@ print(f'Tamanho da lista similares {len(similares)}')
 print(f'Tamanho da lista categorias {len(categorias)}')
 print(f'Tamanho da lista cat_produtos {len(cat_produtos)}')
 print(f'Tamanho da lista reviews {len(reviews)}')
+
 conector = psycopg2.connect("host=" + host + " dbname=" + database + 
                             " user=" + usuario + " password=" + senha)
 cursor = conector.cursor()
 
 #Inserção na tabela Produto
 query_produto = """INSERT INTO produto (id, assin, titulo, grupo, rank)
-                    VALUES (%s, %s, %s, %s, %s)"""          
-start_time = time.time()           
+                    VALUES (%s, %s, %s, %s, %s)"""                   
 psycopg2.extras.execute_batch(cursor, query_produto, produtos)
-end_time = time.time()
-print(f"Tempo de inserção Produto: {end_time - start_time:.2f} segundos")  
-
+produtos = []
 
 #Inserção na tabela Similares 
 query_similares = """INSERT INTO similars (assin, assin_sim)
-                     VALUES (%s, %s)"""
-start_time = time.time() 
-psycopg2.extras.execute_batch(cursor, query_similares, similares)
-end_time = time.time()
-print(f"Tempo de inserção Similares: {end_time - start_time:.2f} segundos")  
+                     VALUES (%s, %s)""" 
+psycopg2.extras.execute_batch(cursor, query_similares, similares) 
+similares = []
 
 
 #Inserção na tabela Categoria
 query_categoria = """INSERT INTO categoria (id, nome, id_pai)
                           VALUES (%s, %s, %s)"""
-start_time = time.time() 
 psycopg2.extras.execute_batch(cursor, query_categoria, categorias)
-end_time = time.time()
-print(f"Tempo de inserção Categoria: {end_time - start_time:.2f} segundos") 
+categorias = [] 
 
 
 #Insersão na tabela Cat_Produto
 query_cat_produto = """INSERT INTO cat_produto (assin, codigo)
                         VALUES (%s, %s)"""  
-start_time = time.time() 
-psycopg2.extras.execute_batch(cursor, query_similares, cat_produtos)
-end_time = time.time()
-print(f"Tempo de inserção Cat_produtos: {end_time - start_time:.2f} segundos")        
-     
+psycopg2.extras.execute_batch(cursor, query_cat_produto, cat_produtos)
+cat_produtos = []          
+
      
 #Insersão na tabela Reviews
 query_reviews = """INSERT INTO review (assin, data, user_id, nota, votos, uteis)
                      VALUES (%s, %s, %s, %s, %s, %s)"""  
-start_time = time.time() 
 psycopg2.extras.execute_batch(cursor, query_reviews, reviews)
-end_time = time.time()
-print(f"Tempo de inserção Reviews: {end_time - start_time:.2f} segundos")   
+reviews = []
 
 conector.commit()
 cursor.close()
