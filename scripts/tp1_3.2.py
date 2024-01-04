@@ -61,7 +61,7 @@ Leitura do arquivo
 
 '''
 #Path do arquivo, OBS: mudar o path para o caminho do arquivo amazon-meta.txt da máquina que está rodando o código
-path = '../amazon-meta.txt'
+path = '../../amazon-meta.txt'
 
 produtos = []
 similares = []
@@ -70,6 +70,7 @@ cat_produtos = []
 reviews = []
 cat_ids = []
 
+print('Iniciando leitura do arquivo...')
 
 with open(path, 'r', encoding='utf-8') as arquivo:
     linha = arquivo.readline()
@@ -128,19 +129,15 @@ with open(path, 'r', encoding='utf-8') as arquivo:
             produtos.append(tupla)
                   
         linha = arquivo.readline()
-                 
-    arquivo.close()
+          
+print('Leitura do arquivo finalizada.')    
 
 """
 
 Inserção dos dados no banco de dados
 
 """
-print(f'Tamanho da lista profuto {len(produtos)}')
-print(f'Tamanho da lista similares {len(similares)}')
-print(f'Tamanho da lista categorias {len(categorias)}')
-print(f'Tamanho da lista cat_produtos {len(cat_produtos)}')
-print(f'Tamanho da lista reviews {len(reviews)}')
+print('Iniciando inserção dos dados no banco de dados...')
 
 conector = psycopg2.connect("host=" + host + " dbname=" + database + 
                             " user=" + usuario + " password=" + senha)
@@ -178,6 +175,8 @@ query_reviews = """INSERT INTO review (assin, data, user_id, nota, votos, uteis)
                      VALUES (%s, %s, %s, %s, %s, %s)"""  
 psycopg2.extras.execute_batch(cursor, query_reviews, reviews)
 reviews = []
+
+print('Inserção dos dados finalizada.')
 
 conector.commit()
 cursor.close()

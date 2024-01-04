@@ -14,17 +14,12 @@ cursor = conector.cursor()
 #Criação do arquivo de saída
 nome_arquivo = 'Queries.txt'
 with open(nome_arquivo, 'w') as arquivo:       
-    assin = input('\033[95mDigite o codigo Assin para gerar as queryes A, B e C que necesitam de Assin: \033[0m')
+    assin = 1885408749
     alternativas = ['A', 'B', 'C', 'D', 'E', 'F', 'G']
 
     for alternativa in alternativas:
         instancia = Query(alternativa, cursor)
-        if alternativa == 'A':
-            resposta1, resposta2 = instancia.query(assin)
-            instancia.tabulate_print(resposta1, nome_arquivo, flag=True)
-            instancia.tabulate_print(resposta2, nome_arquivo, flag=False)
-            
-        elif alternativa == 'B' or alternativa == 'C':
+        if alternativa in ['A', 'B', 'C']:
             resposta = instancia.query(assin)
             instancia.tabulate_print(resposta, nome_arquivo)
         
@@ -32,6 +27,7 @@ with open(nome_arquivo, 'w') as arquivo:
             resposta = instancia.query()
             instancia.tabulate_print(resposta, nome_arquivo)
 
+print('Arquivo Queries.txt criado com sucesso.')
 
 #Dashboard do usuário
 escolha = None
@@ -51,16 +47,8 @@ while escolha != 'EXIT':
                     print('Código inválido.')
                     
                 else :
-                    if escolha == 'A':
-                        resultado1, resultado2 = query.query(codigo)
-                        print('\033[92m5 reviews mais úteis:\033[0m')
-                        query.tabulate_print(resultado1)
-                        print('\n\033[92m5 reviews menos úteis:\033[0m')
-                        query.tabulate_print(resultado2)                      
-                    
-                    else:
-                        resusltado = query.query(codigo)
-                        query.tabulate_print(resusltado)
+                    resusltado = query.query(codigo)
+                    query.tabulate_print(resusltado)
           
             else:
                 resultado = query.query()

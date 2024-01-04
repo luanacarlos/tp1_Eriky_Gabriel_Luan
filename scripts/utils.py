@@ -26,21 +26,19 @@ class Query:
         self.cursor = cursor
     
     def a(self, cod):
-        query1 = f'''(SELECT * 
+        query = f'''(SELECT * 
                     FROM review 
                     WHERE assin='{cod}'
-                    ORDER BY nota DESC, uteis DESC limit 5);'''
-        
-        query2 = f'''(SELECT * 
+                    ORDER BY nota DESC, uteis DESC limit 5)
+                    UNION ALL
+                    (SELECT * 
                     FROM review 
                     WHERE assin='{cod}' 
                     ORDER BY nota ASC, uteis DESC limit 5);'''
         
-        self.cursor.execute(query1)
-        query1 = self.cursor.fetchall()
-        self.cursor.execute(query2)
-        query2 = self.cursor.fetchall()
-        return query1, query2
+        self.cursor.execute(query)
+        query = self.cursor.fetchall()
+        return query
     
     def b(self, cod):
         query = f'''SELECT p.assin, p.rank
@@ -125,23 +123,13 @@ class Query:
         return query
     
     
-    def tabulate_print(self, tabela, nome_arquivo=None, flag=None):
+    def tabulate_print(self, tabela, nome_arquivo=None):
         tabela_formatada = tabulate(tabela, headers=self.cabecalho, tablefmt='grid')
 
         if nome_arquivo:
             with open(nome_arquivo, 'a') as arquivo:
-                if flag == True:
-                    arquivo.write('\n\n' + self.letra + ')' + self.descricoes[self.letra] + '\n')
-                    arquivo.write('\n5 reviews mais úteis:\n')
-                    arquivo.write(tabela_formatada)
-                
-                elif flag == False:
-                    arquivo.write('\n5 reviews menos úteis:\n\n')
-                    arquivo.write(tabela_formatada)
-                
-                else:
-                    arquivo.write('\n\n' + self.letra + ')' + self.descricoes[self.letra] + '\n')
-                    arquivo.write(tabela_formatada + '\n')
+                arquivo.write('\n\n' + self.letra + ')' + self.descricoes[self.letra] + '\n')
+                arquivo.write(tabela_formatada + '\n')
         else:
             print(tabela_formatada, '\n')
         
