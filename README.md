@@ -1,17 +1,45 @@
-# Repositorio Base
-# Trabalho Prático 1 de Bancos de Dados I 
+# Integrantes 
+Eriky Rodrigues de Souza - 21950630
 
-Os detalhes sobre o trablho prático estão disponíveis [aqui](https://docs.google.com/document/d/1CXf_y392fJ_KNTZbdr5TWSRgEuYXFPyGTJOh4DcqOdA/edit): 
+Gabriel César Tavares Ferreira - 21854868
 
-## Copiando esse repositorio
+Luan Carlos Cunha Loureiro de Alencar - 22051002
 
-Você deve ter uma conta no github. A criação de contas é gratis e o GitHub é importante para sua visa profissional e carreira
+# Instalação das dependências
 
-Pa3 ra fazer isso siga esses passos:
+Para instalar as dependências desse projeto basta executar o arquivo `packs.sh` da seguinte forma:
+```bash
+chmod +x packs.sh
+./packs.sh
+```
 
-https://user-images.githubusercontent.com/118348/229365938-48d261c8-b569-463c-bc00-462eb218b423.mp4
+# Como executar o arquivo tp1_3.2.py
 
-Para entender melhor [git e github](https://www.alura.com.br/artigos/o-que-e-git-github).
+Antes de executar esse arquivo é preciso que sejam feitas duas mudanças nesse arquivo
+
+## 1. Editar as variáveis de conexão com o banco de dados
+Para fazer isso basta adicionar as informações do postgres que está na máquina que irá rodar o projeto:
+```bash
+host="localhost"
+database="tp1"
+usuario="postgres"
+senha="12345"
+```
+## 2. Editar o caminho do arquivo `amazon-meta.txt`
+```bash
+#Path do arquivo, OBS: mudar o path para o caminho do arquivo amazon-meta.txt da máquina que está rodando o código
+path = '../../amazon-meta.txt'
+```
+
+## 3. Executar
+```bash
+python3 tp1_3.2.py
+```
+
+# Como executar o arquivo tp1_3.2.py
+```bash
+python3 tp1_3.3.py
+```
 
 ## Configurando
 
