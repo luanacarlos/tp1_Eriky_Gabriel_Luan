@@ -7,7 +7,7 @@ Os detalhes sobre o trablho prático estão disponíveis [aqui](https://docs.goo
 
 Você deve ter uma conta no github. A criação de contas é gratis e o GitHub é importante para sua visa profissional e carreira
 
-Para fazer isso siga esses passos:
+Pa3 ra fazer isso siga esses passos:
 
 https://user-images.githubusercontent.com/118348/229365938-48d261c8-b569-463c-bc00-462eb218b423.mp4
 
@@ -15,6 +15,10 @@ Para entender melhor [git e github](https://www.alura.com.br/artigos/o-que-e-git
 
 ## Configurando
 
+### Pacotes
+```bash
+chmod +x packs.sh
+```
 ### Docker e Docker Compose
 
 Instalando o [docker desktop e docker compose (Windows, Linux e Mac)](https://www.docker.com/products/docker-desktop/)
