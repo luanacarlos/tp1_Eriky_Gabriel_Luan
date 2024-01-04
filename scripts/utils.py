@@ -13,7 +13,16 @@ class Query:
     
     def __init__(self, query, cursor):
         self.funcoes = {'A':self.a, 'B':self.b, 'C':self.c, 'D':self.d, 'E':self.e, 'F':self.f, 'G':self.g}
-        self.query = self.funcoes[query]
+        self.cabecalhos = {'A':['Id Review', 'Assin','Data', 'User ID', 'Nota','Votos', 'Úteis'],
+                           'B': ['Assin', 'Rank'],
+                           'C': ['Data', 'Média'],
+                           'D': ['Assin', 'Grupo', 'Rank'],
+                           'E': ['Assin', 'Titulo', 'Média'],
+                           'F': ['Id', 'Nome', 'Média'],
+                           'G': ['User_ID', 'Grupo', 'Total de Comentários']}
+        self.cabecalho = self.cabecalhos[query]
+        self.letra = query
+        self.query = self.funcoes[self.letra]
         self.cursor = cursor
     
     def a(self, cod):
@@ -31,7 +40,6 @@ class Query:
         query1 = self.cursor.fetchall()
         self.cursor.execute(query2)
         query2 = self.cursor.fetchall()
-
         return query1, query2
     
     def b(self, cod):
@@ -48,7 +56,7 @@ class Query:
         
         self.cursor.execute(query)
         query = self.cursor.fetchall()
-        self.tabulate_print(['Assin', 'Rank'], query)
+        return query
     
     def c(self, cod):
         query = f'''SELECT DISTINCT data, AVG(nota) OVER (ORDER BY data) AS media
@@ -58,7 +66,7 @@ class Query:
         
         self.cursor.execute(query)
         query = self.cursor.fetchall()
-        self.tabulate_print(['Data', 'Média'], query)
+        return query
         
     def d(self):
         query = '''SELECT assin, grupo, MIN(rank) AS rank
@@ -73,7 +81,7 @@ class Query:
                    
         self.cursor.execute(query)
         query = self.cursor.fetchall()
-        self.tabulate_print(['Assin', 'Grupo', 'Rank'], query)
+        return query
     
     def e(self):
         query = '''SELECT p.assin, p.titulo, AVG(r.uteis) AS media
@@ -86,7 +94,7 @@ class Query:
         
         self.cursor.execute(query)
         query = self.cursor.fetchall()
-        self.tabulate_print(['Assin', 'Titulo', 'Média'], query)
+        return query
     
     def f(self):
         query = '''SELECT c.id, c.nome, AVG(r.uteis) AS media
@@ -101,7 +109,7 @@ class Query:
                    
         self.cursor.execute(query)
         query = self.cursor.fetchall()
-        self.tabulate_print(['Id', 'Nome', 'Média'], query)
+        return query
                    
     def g(self):
         query = '''SELECT r.User_ID, p.Grupo, COUNT(r.id) AS total_comentarios
@@ -114,12 +122,28 @@ class Query:
                    
         self.cursor.execute(query)
         query = self.cursor.fetchall()
-        self.tabulate_print(['User_ID', 'Grupo', 'Total de Comentários'], query)
+        return query
     
     
-    def tabulate_print(self, cabecalho, tabela):
-        tabela_formatada = tabulate(tabela, headers=cabecalho, tablefmt='grid')
-        print(tabela_formatada, '\n')
+    def tabulate_print(self, tabela, nome_arquivo=None, flag=None):
+        tabela_formatada = tabulate(tabela, headers=self.cabecalho, tablefmt='grid')
+
+        if nome_arquivo:
+            with open(nome_arquivo, 'a') as arquivo:
+                if flag == True:
+                    arquivo.write('\n\n' + self.letra + ')' + self.descricoes[self.letra] + '\n')
+                    arquivo.write('\n5 reviews mais úteis:\n')
+                    arquivo.write(tabela_formatada)
+                
+                elif flag == False:
+                    arquivo.write('\n5 reviews menos úteis:\n\n')
+                    arquivo.write(tabela_formatada)
+                
+                else:
+                    arquivo.write('\n\n' + self.letra + ')' + self.descricoes[self.letra] + '\n')
+                    arquivo.write(tabela_formatada + '\n')
+        else:
+            print(tabela_formatada, '\n')
         
         
 """
