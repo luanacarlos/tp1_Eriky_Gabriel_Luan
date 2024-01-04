@@ -2,6 +2,7 @@ import psycopg2
 import time
 from utils import Query
     
+#Conectando ao banco de dados    
 host="localhost"
 database="tp1"
 usuario="postgres"
@@ -10,8 +11,8 @@ conector = psycopg2.connect("host=" + host + " dbname=" + database +
                             " user=" + usuario + " password=" + senha)
 cursor = conector.cursor()
 
+#Criação do arquivo de saída
 nome_arquivo = 'Queries.txt'
-
 with open(nome_arquivo, 'w') as arquivo:       
     assin = input('\033[95mDigite o codigo Assin para gerar as queryes A, B e C que necesitam de Assin: \033[0m')
     alternativas = ['A', 'B', 'C', 'D', 'E', 'F', 'G']
@@ -32,6 +33,7 @@ with open(nome_arquivo, 'w') as arquivo:
             instancia.tabulate_print(resposta, nome_arquivo)
 
 
+#Dashboard do usuário
 escolha = None
 while escolha != 'EXIT':
     for query in Query.descricoes:

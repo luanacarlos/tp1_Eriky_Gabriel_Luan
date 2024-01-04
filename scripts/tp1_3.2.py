@@ -60,7 +60,8 @@ conector.close()
 Leitura do arquivo
 
 '''
-path = '/home/luan/BD/amazon-meta.txt'
+#Path do arquivo, OBS: mudar o path para o caminho do arquivo amazon-meta.txt da máquina que está rodando o código
+path = '../amazon-meta.txt'
 
 produtos = []
 similares = []
