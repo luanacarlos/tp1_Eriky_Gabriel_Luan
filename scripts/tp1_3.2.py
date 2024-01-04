@@ -1,7 +1,7 @@
-import psycopg2
-from utils import Produto, Grupo, Categoria, CategoriaProduto, Review, Reviews, Similar, Parser
 import time
+import psycopg2
 import psycopg2.extras
+from utils import Parser
 
 comeco = time.time() 
 host="localhost"

@@ -1,239 +1,133 @@
-import re
-"""
+from tabulate import tabulate
 
-Representação das tabelas do esquema em classes
-
-"""
-
-class Produto:
-    def __init__(self, Id, Assin, Titulo, Grupo, Rank):
-        self.id = Id
-        self.assin = Assin
-        self.titulo = Titulo
-        self.grupo = Grupo
-        self.rank = Rank
+class Query:
+    descricoes = {'A':'Dado um produto, listar os 5 comentários mais úteis e com maior avaliação e os 5 comentários mais úteis e com menor avaliação',
+                        'B':'Dado um produto, listar os produtos similares com maiores vendas do que ele',
+                        'C':'Dado um produto, mostrar a evolução diária das médias de avaliação ao longo do intervalo de tempo coberto no arquivo de entrada',
+                        'D':'Listar os 10 produtos lideres de venda em cada grupo de produtos',
+                        'E':'Listar os 10 produtos com a maior média de avaliações úteis positivas por produto',
+                        'F':'Listar a 5 categorias de produto com a maior média de avaliações úteis positivas por produto',
+                        'G':'Listar os 10 clientes que mais fizeram comentários por grupo de produto'}
+    
+    
+    
+    def __init__(self, query, cursor):
+        self.funcoes = {'A':self.a, 'B':self.b, 'C':self.c, 'D':self.d, 'E':self.e, 'F':self.f, 'G':self.g}
+        self.query = self.funcoes[query]
+        self.cursor = cursor
+    
+    def a(self, cod):
+        query1 = f'''(SELECT * 
+                    FROM review 
+                    WHERE assin='{cod}'
+                    ORDER BY nota DESC, uteis DESC limit 5);'''
         
-    @property
-    def id(self):
-        return self.__id
-    
-    @id.setter
-    def id(self, Id):
-        self.__id = Id
-    
-    @property
-    def ASSIN(self):
-        return self.__ASSIN
-    
-    @ASSIN.setter
-    def ASSIN(self, ASSIN):
-        self.__ASSIN = ASSIN
+        query2 = f'''(SELECT * 
+                    FROM review 
+                    WHERE assin='{cod}' 
+                    ORDER BY nota ASC, uteis DESC limit 5);'''
         
-    @property
-    def titulo(self):
-        return self.__titulo
+        self.cursor.execute(query1)
+        query1 = self.cursor.fetchall()
+        self.cursor.execute(query2)
+        query2 = self.cursor.fetchall()
+
+        return query1, query2
     
-    @titulo.setter
-    def titulo(self, titulo):
-        self.__titulo = titulo
-    
-    @property
-    def grupo(self):
-        return self.__grupo
-    
-    @grupo.setter
-    def grupo(self, grupo):
-        self.__grupo = grupo
-    
-    @property
-    def rank(self):
-        return self.__rank
-    
-    @rank.setter
-    def rank(self, rank):
-        self.__rank = rank
+    def b(self, cod):
+        query = f'''SELECT p.assin, p.rank
+                   FROM produto p
+                   WHERE p.assin IN 
+                   (SELECT s.assin_sim
+                    FROM similars s
+                    WHERE s.assin = '{cod}')
+                    AND p.rank < (SELECT rank
+                                  FROM produto
+                                  WHERE assin = '{cod}')
+                    ORDER BY p.rank ASC;'''
         
-
-class Grupo:
-    def __init__(self, cod_grupo, nome_grupo):
-        self.cod_grupo = cod_grupo
-        self.nome_grupo = nome_grupo
+        self.cursor.execute(query)
+        query = self.cursor.fetchall()
+        self.tabulate_print(['Assin', 'Rank'], query)
     
-    @property
-    def cod_grupo(self):
-        return self.__cod_grupo
-    
-    @cod_grupo.setter
-    def cod_grupo(self, cod_grupo):
-        self.__cod_grupo = cod_grupo
-    
-    @property
-    def nome_grupo(self):
-        return self.__nome_grupo
-    
-
-class Categoria:
-    def __init__(self, id, nome, id_pai):
-        self.id = id
-        self.nome = nome
-        self.id_pai = id_pai
-    
-    @property
-    def id(self):
-        return self.__id
-    
-    @id.setter
-    def id(self, id):
-        self.__id = id
-    
-    @property
-    def nome(self):
-        return self.__nome
-    
-    @nome.setter
-    def nome(self, nome):
-        self.__nome = nome
+    def c(self, cod):
+        query = f'''SELECT DISTINCT data, AVG(nota) OVER (ORDER BY data) AS media
+                    FROM review
+                    WHERE assin = '{cod}'
+                    ORDER BY data;'''
         
-    @property
-    def id_pai(self):
-        return self.__id_pai
-    
-    @id_pai.setter
-    def id_pai(self, id_pai):
-        self.__id_pai = id_pai
-    
-    
-class CategoriaProduto:
-    def __init__(self, assin, lista_cat):
-        self.assin = assin
-        self.lista_cat = lista_cat  
-
-    @property
-    def assin(self):
-        return self.__assin
-    
-    @assin.setter
-    def assin(self, assin):
-        self.__assin = assin
-    
-    @property
-    def lista_cat(self):
-        return self.__lista_cat
-
-    @lista_cat.setter
-    def lista_cat(self, lista_cat):
-        self.__lista_cat = lista_cat
-    
+        self.cursor.execute(query)
+        query = self.cursor.fetchall()
+        self.tabulate_print(['Data', 'Média'], query)
         
-
-class Review:
-    def __init__(self, assin, data, user_id, nota, votos, votos_util):
-        self.assin = assin
-        self.data = data
-        self.user_id = user_id
-        self.nota = nota
-        self.votos = votos
-        self.votos_util = votos_util
+    def d(self):
+        query = '''SELECT assin, grupo, MIN(rank) AS rank
+                   FROM (SELECT assin, grupo, rank, ROW_NUMBER() 
+                   OVER (PARTITION BY grupo ORDER BY rank ASC) AS rnk
+                   FROM produto
+                   WHERE grupo IS NOT NULL AND rank != -1 AND rank != 0) 
+                   AS ranked_products
+                   WHERE rnk <= 10
+                   GROUP BY assin, grupo
+                   ORDER BY grupo, MIN(rank) ASC;'''
+                   
+        self.cursor.execute(query)
+        query = self.cursor.fetchall()
+        self.tabulate_print(['Assin', 'Grupo', 'Rank'], query)
     
-    @property
-    def assin(self):
-        return self.__assin
-    
-    @assin.setter
-    def assin(self, assin):
-        self.__assin = assin
+    def e(self):
+        query = '''SELECT p.assin, p.titulo, AVG(r.uteis) AS media
+                   FROM produto p
+                   JOIN review r ON p.assin = r.assin
+                   WHERE r.uteis >0 AND r.nota >3
+                   GROUP BY p.assin, p.titulo
+                   ORDER BY media DESC
+                   LIMIT 10;'''
         
-    @property
-    def data(self):
-        return self.__data
+        self.cursor.execute(query)
+        query = self.cursor.fetchall()
+        self.tabulate_print(['Assin', 'Titulo', 'Média'], query)
     
-    @data.setter
-    def data(self, data):
-        self.__data = data
+    def f(self):
+        query = '''SELECT c.id, c.nome, AVG(r.uteis) AS media
+                   FROM categoria c
+                   JOIN cat_produto cp ON c.id = cp.codigo
+                   JOIN produto p ON cp.assin = p.assin
+                   JOIN review r ON p.assin = r.assin
+                   WHERE r.nota > 3 AND r.uteis >0
+                   GROUP BY c.id, c.nome
+                   ORDER BY media DESC
+                   LIMIT 5;'''
+                   
+        self.cursor.execute(query)
+        query = self.cursor.fetchall()
+        self.tabulate_print(['Id', 'Nome', 'Média'], query)
+                   
+    def g(self):
+        query = '''SELECT r.User_ID, p.Grupo, COUNT(r.id) AS total_comentarios
+                   FROM REVIEW r
+                   JOIN PRODUTO p ON r.assin = p.assin
+                   WHERE r.User_ID IS NOT NULL
+                   GROUP BY r.User_ID, p.Grupo
+                   ORDER BY total_comentarios DESC
+                   LIMIT 10;'''
+                   
+        self.cursor.execute(query)
+        query = self.cursor.fetchall()
+        self.tabulate_print(['User_ID', 'Grupo', 'Total de Comentários'], query)
     
-    @property
-    def user_id(self):
-        return self.__user_id
     
-    @user_id.setter
-    def user_id(self, user_id):
-        self.__user_id = user_id
-    
-    @property
-    def nota(self):
-        return self.__nota
-    
-    @nota.setter
-    def nota(self, nota):
-        self.__nota = nota
-    
-    @property
-    def votos(self):
-        return self.__votos
-    
-    @votos.setter
-    def votos(self, votos):
-        self.__votos = votos
-    
-    @property
-    def votos_util(self):
-        return self.__votos_util
-    
-    @votos_util.setter
-    def votos_util(self, votos_util):
-        self.__votos_util = votos_util
-    
-
-class Reviews:
-    def __init__(self, asin, id_review):
-        self.asin = asin
-        self.id_review = id_review
+    def tabulate_print(self, cabecalho, tabela):
+        tabela_formatada = tabulate(tabela, headers=cabecalho, tablefmt='grid')
+        print(tabela_formatada, '\n')
         
-    @property
-    def asin(self):
-        return self.__asin
-    
-    @asin.setter
-    def asin(self, asin):
-        self.__asin = asin
-    
-    @property
-    def id_review(self):
-        return self.__id_review
-    
-    @id_review.setter
-    def id_review(self, id_review):
-        self.__id_review = id_review
-    
-
-class Similar:
-    def __init__(self, Assin, similars_asin):
-        self.Assin = Assin
-        self.similars_asin = similars_asin
-        
-    @property
-    def Assin(self):
-        return self.__Assin
-    
-    @Assin.setter
-    def Assin(self, Assin):
-        self.__Assin = Assin
-    
-    @property
-    def similars_asin(self):
-        return self.__similars_asin
-    
-    @similars_asin.setter
-    def similars_asin(self, similars_asin):
-        self.__similars_asin = similars_asin
-        
-
         
 """
 
 Classe do parser
 
 """
+
 class Parser:
         
     def id(linha):
@@ -274,12 +168,10 @@ class Parser:
             for i in range(0, int(quantity)):
                 linha = arquivo.readline().strip() 
                 cats.append(linha.split('|')[1:][-1])
-                #print(Parser.gera_hierarquia(linha.split('|')[1:]))
                 for categoria in Parser.gera_hierarquia(linha.split('|')[1:]):
                         hierarquia.append(categoria)
                         
             codes = Parser.extract_codes(cats)
-            #print(codes)
             return codes, hierarquia
 
     def reviews(linha, arquivo):
@@ -310,33 +202,17 @@ class Parser:
         return categorias
     
     def extract_codes(strings):
-        """
-        Extrai códigos de strings no formato "texto[code]" ou "texto".
-
-        Args:
-            strings: Uma lista de strings.
-
-        Returns:
-            Uma lista contendo os códigos extraídos ou None se a string não tiver um código.
-        """
-
         codes = []
         for string in strings:
-            # Encontra os índices de início e fim da seção de código mais à direita
             start_index = string.rfind("[")
             end_index = string.rfind("]")
-
-            # Verifica se há uma seção de código
             if start_index != -1 and end_index != -1:
                 try:
-                    # Tenta converter o código para inteiro
                     code = int(string[start_index + 1:end_index])
                     codes.append(code)
                 except ValueError:
-                    # Se a conversão falhar, assume que não há código e adiciona None
                     codes.append(None)
             else:
-                # Não há seção de código na string, então adiciona None
                 codes.append(None)
 
         return codes
@@ -344,10 +220,10 @@ class Parser:
     def extract_names(strings):
         names = []
         for string in strings:
-            start_index = 0  # Índice de início do texto
-            end_index = string.find("[")  # Índice de fechamento do colchete
-            name = string[:end_index]  # Extrai o texto
-            names.append(name)  # Adiciona o nome à lista de nomes
+            start_index = 0
+            end_index = string.find("[")
+            name = string[:end_index]  
+            names.append(name) 
 
         return names
     
